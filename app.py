@@ -8,7 +8,7 @@ from sklearn.ensemble import RandomForestClassifier
 st.set_page_config(page_title="Renal CFD & ML Dashboard", layout="wide", page_icon="🫘")
 
 st.title("🫘 Renal Fluid Flow & CKD Prediction Dashboard")
-st.markdown("Interactive dashboard integrating **Computational Fluid Dynamics (CFD)** over real geometry and **Machine Learning** predictions for Chronic Kidney Disease (CKD).")
+st.markdown("Interactive dashboard integrating **Computational Fluid Dynamics (Non-Newtonian Blood Rheology)** over real geometry and **Machine Learning** predictions for Chronic Kidney Disease (CKD).")
 
 # Sidebar for ML inputs
 st.sidebar.header("Patient Hemodynamics")
@@ -66,7 +66,7 @@ with col1:
 
 with col2:
     st.subheader("CFD Simulation Output")
-    st.markdown("Velocity vectors and pressure fields mapped to the **glomerulus cross-section**.")
+    st.markdown("Velocity vectors, pressure fields, and **Non-Newtonian Dynamic Viscosity** mapped to the glomerulus cross-section.")
     if os.path.exists("results/masked_cfd_simulation_results.png"):
         st.image("results/masked_cfd_simulation_results.png", use_container_width=True)
     else:
