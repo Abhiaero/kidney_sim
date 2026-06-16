@@ -52,6 +52,8 @@ As the project evolves beyond the initial 2D analytical and FDM-based simulation
 
 ## 7. References
 1.  **Navier-Stokes Equations in Biology:** *Fung, Y. C. (1997). Biomechanics: Circulation.* Springer. [Access Here](https://link.springer.com/book/10.1007/978-1-4757-2696-1)
-2.  **Renal Hemodynamics and CFD:** *Karch, R., et al. (1999). "A three-dimensional model for the arterial tree of the human kidney."* [Access Here](https://pubmed.ncbi.nlm.nih.gov/10412351/)
-3.  **Porous Media in Glomerular Filtration:** *Smithies, O. (2003). "Why the kidney glomerulus does not clog."* PNAS. [Access Here](https://www.pnas.org/doi/10.1073/pnas.0831202100)
-4.  **Wall Shear Stress and Disease:** *Malek, A. M., et al. (1999). "Hemodynamic shear stress and its role in atherosclerosis."* JAMA. [Access Here](https://jamanetwork.com/journals/jama/article-abstract/192161)
+2.  **Renal Hemodynamics and CFD:** *Karch, R., et al. (1999). "A three-dimensional model for the arterial tree of the human kidney."* [Access Here](https://doi.org/10.1016/S0010-4825(98)00045-3)
+3.  **Porous Media in Glomerular Filtration:** *Smithies, O. (2003). "Why the kidney glomerulus does not clog."* PNAS. [Access Here](https://doi.org/10.1073/pnas.0831202100)
+4.  **Wall Shear Stress and Disease:** *Malek, A. M., et al. (1999). "Hemodynamic shear stress and its role in atherosclerosis."* JAMA. [Access Here](https://doi.org/10.1001/jama.282.21.2035)
+5.  **Physics-Informed Neural Networks:** *Raissi, M., et al. (2019). "Physics-informed neural networks: A deep learning framework for solving forward and inverse problems involving nonlinear partial differential equations."* JCP. [Access Here](https://doi.org/10.1016/j.jcp.2018.10.045)
+6.  **Machine Learning in CKD Prediction:** *Ravizza, S., et al. (2019). "Predicting the early risk of chronic kidney disease in patients with diabetes using real-world data."* Nature Medicine. [Access Here](https://doi.org/10.1038/s41591-018-0246-6)

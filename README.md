@@ -12,6 +12,7 @@ This project provides an industrial-grade foundational model to simulate human r
 *   **`visualize_results.py`**: The post-processing script. It loads the simulation data matrices and uses Matplotlib to generate high-quality vector fields and contour visualizations overlaid on the real geometry.
 *   **`pinn_surrogate.py`**: Machine Learning script implementing a Physics-Informed Neural Network (PINN) using PyTorch. This acts as a proof-of-concept fast surrogate model learning the physics of the Navier-Stokes equations.
 *   **`train_ckd_classifier.py`**: Machine Learning script using Scikit-Learn. It generates synthetic patient hemodynamic data (WSS, pressure gradients) and trains a Random Forest Classifier to predict CKD stages. Outputs a confusion matrix.
+*   **`app.py`**: Interactive Streamlit Web Dashboard. Acts as the frontend UI where users can adjust patient parameters on sliders, view real-time CKD stage predictions from the ML model, and visualize the CFD fluid flow overlaid on the kidney geometry.
 *   **`requirements.txt`**: Standard Python dependencies required to run the simulation, data processing, and ML algorithms.
 *   **`results/`**: A generated folder containing raw `.npy` arrays output by the solver, the final CFD plotted image (`masked_cfd_simulation_results.png`), and the ML classification confusion matrix (`ckd_classifier_cm.png`).
 
@@ -57,6 +58,11 @@ python pinn_surrogate.py
 **E. Train CKD Machine Learning Classifier** (Saves `results/ckd_classifier_cm.png`):
 ```powershell
 python train_ckd_classifier.py
+```
+
+**F. Launch Interactive Dashboard** (Opens UI in default browser):
+```powershell
+streamlit run app.py
 ```
 
 ## Future Advanced Usage
