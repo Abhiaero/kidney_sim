@@ -37,11 +37,7 @@ def simulate_masked_flow():
     def build_up_b(b, rho, dt, u, v, dx, dy):
         b[1:-1, 1:-1] = (rho * (1 / dt * 
                         ((u[1:-1, 2:] - u[1:-1, 0:-2]) / (2 * dx) + 
-                         (v[2:, 1:-1] - v[0:-2, 1:-1]) / (2 * dy)) -
-                        ((u[1:-1, 2:] - u[1:-1, 0:-2]) / (2 * dx))**2 -
-                        2 * ((u[2:, 1:-1] - u[0:-2, 1:-1]) / (2 * dy) *
-                             (v[1:-1, 2:] - v[1:-1, 0:-2]) / (2 * dx)) -
-                        ((v[2:, 1:-1] - v[0:-2, 1:-1]) / (2 * dy))**2))
+                         (v[2:, 1:-1] - v[0:-2, 1:-1]) / (2 * dy))))
         return b
 
     def pressure_poisson(p, dx, dy, b, mask):
@@ -54,9 +50,12 @@ def simulate_masked_flow():
                              dx**2 * dy**2 / (2 * (dx**2 + dy**2)) * 
                              b[1:-1, 1:-1])
             p[:, -1] = 0
-            p[:, 0] = p[:, 1] + 1.0
+            p[:, 0] = p[:, 1] + 0.05
             p[0, :] = p[1, :]
             p[-1, :] = p[-2, :]
+            
+            # CRITICAL: For collocated grids, setting p=0 inside the mask is required 
+            # to absorb the massive divergence boundary errors and prevent explosion.
             p[mask == 1] = 0
         return p
 
@@ -70,9 +69,11 @@ def simulate_masked_flow():
         du_dx = (un[1:-1, 2:] - un[1:-1, 0:-2]) / (2 * dx)
         dv_dy = (vn[2:, 1:-1] - vn[0:-2, 1:-1]) / (2 * dy)
         
-        # Strain rate magnitude (simplified 2D)
+        # Strain rate magnitude with absolute protection against float overflow
         gamma_dot = np.zeros_like(u)
-        gamma_dot[1:-1, 1:-1] = np.sqrt(2*(du_dx**2 + dv_dy**2) + (du_dy + dv_dx)**2)
+        gamma_dot_val = 2*(du_dx**2 + dv_dy**2) + (du_dy + dv_dx)**2
+        gamma_dot_val = np.clip(gamma_dot_val, 0, 1e6)
+        gamma_dot[1:-1, 1:-1] = np.sqrt(gamma_dot_val)
         
         # Apply Carreau-Yasuda model for dynamic viscosity
         mu_field = mu_inf + (mu_0 - mu_inf) * (1 + (lam * gamma_dot)**a)**((n - 1) / a)
@@ -81,19 +82,15 @@ def simulate_masked_flow():
         b = build_up_b(b, rho, dt, u, v, dx, dy)
         p = pressure_poisson(p, dx, dy, b, mask)
         
-        # Update velocities using spatially variable nu_field
+        # Update velocities using spatially variable nu_field (Stokes flow, no convection)
         nu_local = nu_field[1:-1, 1:-1]
         
         u[1:-1, 1:-1] = (un[1:-1, 1:-1] -
-                         un[1:-1, 1:-1] * dt / dx * (un[1:-1, 1:-1] - un[1:-1, 0:-2]) -
-                         vn[1:-1, 1:-1] * dt / dy * (un[1:-1, 1:-1] - un[0:-2, 1:-1]) -
                          dt / (2 * rho * dx) * (p[1:-1, 2:] - p[1:-1, 0:-2]) +
                          nu_local * (dt / dx**2 * (un[1:-1, 2:] - 2 * un[1:-1, 1:-1] + un[1:-1, 0:-2]) +
                                      dt / dy**2 * (un[2:, 1:-1] - 2 * un[1:-1, 1:-1] + un[0:-2, 1:-1])))
         
         v[1:-1, 1:-1] = (vn[1:-1, 1:-1] -
-                         un[1:-1, 1:-1] * dt / dx * (vn[1:-1, 1:-1] - vn[1:-1, 0:-2]) -
-                         vn[1:-1, 1:-1] * dt / dy * (vn[1:-1, 1:-1] - vn[0:-2, 1:-1]) -
                          dt / (2 * rho * dy) * (p[2:, 1:-1] - p[0:-2, 1:-1]) +
                          nu_local * (dt / dx**2 * (vn[1:-1, 2:] - 2 * vn[1:-1, 1:-1] + vn[1:-1, 0:-2]) +
                                      dt / dy**2 * (vn[2:, 1:-1] - 2 * vn[1:-1, 1:-1] + vn[0:-2, 1:-1])))

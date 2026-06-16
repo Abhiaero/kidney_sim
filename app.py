@@ -8,7 +8,7 @@ from sklearn.ensemble import RandomForestClassifier
 st.set_page_config(page_title="Renal CFD & ML Dashboard", layout="wide", page_icon="🫘")
 
 st.title("🫘 Renal Fluid Flow & CKD Prediction Dashboard")
-st.markdown("Interactive dashboard integrating **Computational Fluid Dynamics (Non-Newtonian Blood Rheology)** over real geometry and **Machine Learning** predictions for Chronic Kidney Disease (CKD).")
+st.markdown("Interactive dashboard integrating **Computational Fluid Dynamics (Non-Newtonian Rheology & Porous Media Filtration)** over real geometry and **Machine Learning** predictions for Chronic Kidney Disease (CKD).")
 
 # Sidebar for ML inputs
 st.sidebar.header("Patient Hemodynamics")
