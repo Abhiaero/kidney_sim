@@ -40,7 +40,8 @@ The numerical simulation involves the following sequence:
 
 ### 4.5. Physics-Informed Neural Network (PINN) Surrogate
 To overcome the high computational cost of the classical FDM/FVM solvers, we implement a **Physics-Informed Neural Network (PINN)** as a surrogate model.
-*   **Architecture:** A deep Multi-Layer Perceptron (MLP) mapping spatial coordinates $(x, y)$ to $(u, v, p)$.
+*   **Architecture (Fourier Feature Networks):** To combat spectral bias and capture the high-frequency dynamics of fluid flow around porous boundaries, the architecture utilizes a **Fourier Feature mapping layer** before passing spatial coordinates $(x, y)$ into a deep Multi-Layer Perceptron (MLP) to output $(u, v, p)$.
+*   **Optimization Strategy:** The PINN undergoes two-stage optimization. An initial phase using the **Adam** optimizer explores the loss landscape, followed by a high-precision **L-BFGS (Limited-memory Broyden–Fletcher–Goldfarb–Shanno)** optimizer to converge the PDE residuals down to machine precision.
 *   **Physics Loss (Soft Constraints):** Instead of relying purely on data, the network is trained by enforcing the governing PDEs directly in the loss function via Automatic Differentiation (`autograd`). The total loss $L$ is given by:
     $L = L_{PDE} + \lambda L_{BC}$
     Where $L_{PDE}$ minimizes the residuals of the 2D Stokes Flow equations:

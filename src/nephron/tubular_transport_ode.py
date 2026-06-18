@@ -6,20 +6,29 @@ import os
 def nephron_transport_model():
     print("Initializing Weinstein-Stephenson Nephron ODE Model...")
     
+    PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../'))
+    config_path = os.path.join(PROJECT_ROOT, 'config.yaml')
+    
+    import yaml
+    with open(config_path, 'r') as f:
+        config = yaml.safe_load(f)
+        
+    n_cfg = config['physics']['nephron']
+    
     # Tubule properties
-    L = 1.0  # Length of proximal tubule (cm)
-    r = 0.002  # Tubule radius (cm)
+    L = n_cfg['length_cm']  # Length of proximal tubule (cm)
+    r = n_cfg['radius_cm']  # Tubule radius (cm)
     A = np.pi * r**2  # Cross-sectional area
     
-    # Transport coefficients (simplified parameters)
-    P_f = 0.5  # Water permeability (cm/s)
-    P_Na = 0.3 # NaCl permeability
-    V_max = 0.1 # Active transport max rate
-    K_m = 10.0 # Michaelis constant
+    # Transport coefficients
+    P_f = n_cfg['p_f']
+    P_Na = n_cfg['p_na']
+    V_max = n_cfg['v_max']
+    K_m = n_cfg['k_m']
     
     # Boundary conditions from glomerulus
-    Q0 = 0.005 # Initial Volume Flow (cm^3/s)
-    C0 = 140.0 # Initial NaCl Concentration (mM)
+    Q0 = n_cfg['initial_flow']
+    C0 = n_cfg['initial_nacl']
     
     def transport_odes(x, y):
         Q, C = y # y[0] = Flow, y[1] = Concentration

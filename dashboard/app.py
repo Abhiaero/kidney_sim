@@ -5,6 +5,8 @@ import plotly.graph_objects as go
 import xgboost as xgb
 import plotly.express as px
 
+import yaml
+
 # Setup page
 st.set_page_config(page_title="Renal CFD & ML Dashboard", layout="wide", page_icon="🫘")
 
@@ -12,8 +14,14 @@ PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '../'))
 results_dir = os.path.join(PROJECT_ROOT, 'results')
 assets_dir = os.path.join(PROJECT_ROOT, 'assets')
 
+config_path = os.path.join(PROJECT_ROOT, 'config.yaml')
+with open(config_path, 'r') as f:
+    config = yaml.safe_load(f)
+
+fluid_cfg = config['physics']['fluid']
 st.title("🫘 Renal Fluid Flow & CKD Prediction Dashboard")
-st.markdown("Interactive dashboard integrating **Computational Fluid Dynamics**, **Nephron ODE Models**, and **Machine Learning** predictions for Chronic Kidney Disease (CKD).")
+st.markdown("Interactive dashboard integrating **Computational Fluid Dynamics**, **Nephron ODE Models**, **AI Surrogates**, and **Machine Learning** predictions for Chronic Kidney Disease (CKD).")
+st.markdown(f"*(Fluid Config Active: $\\rho={fluid_cfg['rho']}$, $\\nu_{{baseline}}={fluid_cfg['nu']}$)*")
 
 # Sidebar for ML inputs
 st.sidebar.header("Patient Hemodynamics")
@@ -36,7 +44,7 @@ def get_ml_model():
 model = get_ml_model()
 
 # Create tabs for better organization
-tab1, tab2, tab3, tab4 = st.tabs(["Clinical Prediction (ML)", "CFD Visualization", "Nephron ODE Model", "Feature Importance (SHAP)"])
+tab1, tab2, tab3, tab4, tab5 = st.tabs(["Clinical Prediction (ML)", "CFD Visualization", "Nephron ODE Model", "Feature Importance (SHAP)", "PINN Validation"])
 
 with tab1:
     col1, col2 = st.columns([1, 1])
@@ -105,3 +113,12 @@ with tab4:
         st.image(shap_path, use_container_width=True)
     else:
         st.info("Run the ML Classifier pipeline to generate SHAP values.")
+
+with tab5:
+    st.subheader("Fourier Feature PINN vs CFD Validation")
+    st.markdown("Validation of the AI Surrogate (Physics-Informed Neural Network) against the classical Navier-Stokes FDM solver.")
+    val_path = os.path.join(results_dir, "pinn_vs_cfd_validation.png")
+    if os.path.exists(val_path):
+        st.image(val_path, use_container_width=True)
+    else:
+        st.info("Run the PINN pipeline to generate validation metrics.")

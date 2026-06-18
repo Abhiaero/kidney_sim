@@ -6,6 +6,13 @@ def simulate_masked_flow():
     
     PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../'))
     
+    config_path = os.path.join(PROJECT_ROOT, 'config.yaml')
+    import yaml
+    with open(config_path, 'r') as f:
+        config = yaml.safe_load(f)
+        
+    fluid_cfg = config['physics']['fluid']
+    
     mask_path = os.path.join(PROJECT_ROOT, 'assets/mask.npy')
     if os.path.exists(mask_path):
         mask = np.load(mask_path)
@@ -20,7 +27,7 @@ def simulate_masked_flow():
     dx = 2.0 / (nx - 1)
     dy = 1.0 / (ny - 1)
     
-    rho = 1.0
+    rho = fluid_cfg['rho']
     dt = 0.001
     
     # Carreau-Yasuda parameters for Blood (normalized for this specific scale)

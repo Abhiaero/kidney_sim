@@ -1,0 +1,39 @@
+# RenalFlow-Sim Global Configuration File
+
+physics:
+  fluid:
+    rho: 1.05       # Blood density (g/cm^3)
+    nu: 0.04        # Kinematic viscosity baseline (cm^2/s) for Newtonian approximation
+    inlet_velocity: 0.1  # Core inlet velocity (cm/s)
+  
+  nephron:
+    length_cm: 1.0  # Length of proximal tubule
+    radius_cm: 0.002
+    p_f: 0.5        # Water permeability
+    p_na: 0.3       # NaCl permeability
+    v_max: 0.1      # Active transport max rate
+    k_m: 10.0       # Michaelis constant
+    initial_flow: 0.005 # cm^3/s
+    initial_nacl: 140.0 # mM
+
+machine_learning:
+  cohort:
+    n_samples: 10000
+    random_seed: 42
+  xgboost:
+    n_estimators: 150
+    learning_rate: 0.1
+    max_depth: 5
+
+pinn:
+  architecture:
+    n_layers: 5
+    n_neurons: 256
+    fourier_features: true
+    fourier_sigma: 2.0
+  training:
+    adam_epochs: 1000
+    lbfgs_epochs: 100
+    n_colloc_points: 3000
+    n_boundary_points: 800
+    lr: 0.001

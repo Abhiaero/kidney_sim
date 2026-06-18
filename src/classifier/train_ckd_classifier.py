@@ -9,7 +9,8 @@ from sklearn.metrics import classification_report, confusion_matrix
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-def generate_virtual_cohort(n_samples=10000):
+def generate_virtual_cohort(config):
+    n_samples = config['machine_learning']['cohort']['n_samples']
     print(f"Generating synthetic {n_samples}-patient virtual cohort using Latin Hypercube Sampling...")
     
     # We have 4 features: WSS_avg, WSS_max, Pressure_Drop, GFR
@@ -47,11 +48,24 @@ def train_classifier():
     results_dir = os.path.join(PROJECT_ROOT, 'results')
     os.makedirs(results_dir, exist_ok=True)
     
-    X, y = generate_virtual_cohort(10000)
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+    config_path = os.path.join(PROJECT_ROOT, 'config.yaml')
+    import yaml
+    with open(config_path, 'r') as f:
+        config = yaml.safe_load(f)
+        
+    xgb_cfg = config['machine_learning']['xgboost']
+    seed = config['machine_learning']['cohort']['random_seed']
+    
+    X, y = generate_virtual_cohort(config)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=seed)
     
     print("Training XGBoost Classifier on Hemodynamic Features...")
-    clf = xgb.XGBClassifier(n_estimators=150, learning_rate=0.1, max_depth=5, random_state=42)
+    clf = xgb.XGBClassifier(
+        n_estimators=xgb_cfg['n_estimators'], 
+        learning_rate=xgb_cfg['learning_rate'], 
+        max_depth=xgb_cfg['max_depth'], 
+        random_state=seed
+    )
     clf.fit(X_train, y_train)
     
     y_pred = clf.predict(X_test)

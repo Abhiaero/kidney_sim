@@ -43,8 +43,11 @@ kidney_sim/
 3.  **`src/viz/visualize_results.py`**: Post-processing module. It loads the simulation tensors and generates publication-ready colormaps for Velocity, Pressure, and Dynamic Viscosity using Matplotlib.
 4.  **`src/nephron/tubular_transport_ode.py`**: Implementation of Phase 3. A rigid mathematical model using a system of ODEs (solved via SciPy's stiff `Radau` integrator) simulating the **Weinstein-Stephenson epithelial transport** along the proximal tubule. Computes fluid flow and NaCl concentration drops mimicking reabsorption.
 5.  **`src/classifier/train_ckd_classifier.py`**: The ML component (Phase 5). Generates a rigorous **10,000-patient virtual cohort** via Latin Hypercube Sampling. Trains an **XGBoost Classifier** on hemodynamic features to predict CKD stages and uses **SHAP** to compute actionable feature importances for clinicians.
-6.  **`src/pinn/pinn_surrogate.py`**: Implementation of Phase 4. A **Physics-Informed Neural Network (PINN)** built in PyTorch. It samples collocation points from the biological fluid mask and computes spatial derivatives ($\partial u/\partial x$, $\partial^2 u/\partial x^2$) via PyTorch `autograd` to explicitly minimize the 2D Stokes Flow PDE residuals in the loss function, proving the viability of AI fluid surrogates.
-7.  **`dashboard/app.py`**: An interactive web dashboard built with Streamlit and Plotly. It unifies the CFD results, the Nephron ODE profiles, and the XGBoost/SHAP ML predictions into a single, cohesive clinical interface.
+6.  **`src/pinn/pinn_surrogate.py`**: Implementation of Phase 4. A journal-grade **Fourier Feature Physics-Informed Neural Network (PINN)** built in PyTorch. It samples collocation points from the biological fluid mask and computes spatial derivatives ($\partial u/\partial x$, $\partial^2 u/\partial x^2$) via PyTorch `autograd` to explicitly minimize the 2D Stokes Flow PDE residuals. It uses a robust two-stage **Adam $\rightarrow$ L-BFGS** optimization strategy and cross-validates its predictions by computing the Relative $L_2$ error against the CFD solver.
+7.  **`dashboard/app.py`**: An interactive web dashboard built with Streamlit and Plotly. It unifies the CFD results, the Nephron ODE profiles, the XGBoost/SHAP ML predictions, and the PINN validation metrics into a single, cohesive clinical interface.
+
+### ⚙️ Centralized Configuration
+For strict reproducibility (a requirement for journal publication), all hardcoded hyperparameters have been stripped from the python scripts. Every script dynamically loads its physical constants (viscosity, lengths) and machine learning hyperparams (epochs, learning rates) from **`config.yaml`**. 
 
 ## 🚀 Run the Pipeline
 
