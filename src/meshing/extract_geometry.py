@@ -3,7 +3,10 @@ import cv2
 import os
 
 def extract():
-    img_path = 'assets/glomerulus_cross_section.png'
+    PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../'))
+    assets_dir = os.path.join(PROJECT_ROOT, 'assets')
+    img_path = os.path.join(assets_dir, 'glomerulus_cross_section.png')
+    
     if not os.path.exists(img_path):
         print("Image not found:", img_path)
         return
@@ -26,9 +29,10 @@ def extract():
     mask[:, -1] = 0
     
     # Save the mask
-    os.makedirs('assets', exist_ok=True)
-    np.save('assets/mask.npy', mask)
-    print("Mask extracted and saved to assets/mask.npy. Shape:", mask.shape)
+    os.makedirs(assets_dir, exist_ok=True)
+    out_path = os.path.join(assets_dir, 'mask.npy')
+    np.save(out_path, mask)
+    print("Mask extracted and saved to", out_path, "Shape:", mask.shape)
 
 if __name__ == "__main__":
     extract()

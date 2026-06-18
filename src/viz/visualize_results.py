@@ -3,21 +3,26 @@ import matplotlib.pyplot as plt
 import os
 
 def plot_results():
-    if not os.path.exists('results'):
-        print("Results directory not found. Please run the simulation first.")
+    PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../'))
+    results_dir = os.path.join(PROJECT_ROOT, 'results')
+    
+    if not os.path.exists(results_dir):
+        print(f"Results directory {results_dir} not found. Please run the simulation first.")
         return
         
-    u = np.load('results/u.npy')
-    v = np.load('results/v.npy')
-    p = np.load('results/p.npy')
+    u = np.load(os.path.join(results_dir, 'u.npy'))
+    v = np.load(os.path.join(results_dir, 'v.npy'))
+    p = np.load(os.path.join(results_dir, 'p.npy'))
     
-    if os.path.exists('results/mask.npy'):
-        mask = np.load('results/mask.npy')
+    mask_path = os.path.join(results_dir, 'mask.npy')
+    if os.path.exists(mask_path):
+        mask = np.load(mask_path)
     else:
         mask = np.zeros_like(u)
         
-    if os.path.exists('results/nu.npy'):
-        nu = np.load('results/nu.npy')
+    nu_path = os.path.join(results_dir, 'nu.npy')
+    if os.path.exists(nu_path):
+        nu = np.load(nu_path)
     else:
         nu = np.zeros_like(u)
         
@@ -69,9 +74,10 @@ def plot_results():
     axs[2].set_xlabel('Length [x]')
     axs[2].set_ylabel('Height [y]')
     
+    out_path = os.path.join(results_dir, 'masked_cfd_simulation_results.png')
     plt.tight_layout()
-    plt.savefig('results/masked_cfd_simulation_results.png', dpi=150)
-    print("Plot saved to 'results/masked_cfd_simulation_results.png'.")
+    plt.savefig(out_path, dpi=150)
+    print(f"Plot saved to '{out_path}'.")
 
 if __name__ == '__main__':
     plot_results()

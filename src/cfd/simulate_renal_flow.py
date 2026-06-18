@@ -4,12 +4,14 @@ import os
 def simulate_masked_flow():
     print("Starting 2D CFD simulation with Non-Newtonian Carreau-Yasuda Rheology...")
     
-    mask_path = 'assets/mask.npy'
+    PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../'))
+    
+    mask_path = os.path.join(PROJECT_ROOT, 'assets/mask.npy')
     if os.path.exists(mask_path):
         mask = np.load(mask_path)
         ny, nx = mask.shape
     else:
-        print("Mask not found, using default 60x20 channel.")
+        print(f"Mask not found at {mask_path}, using default 60x20 channel.")
         nx, ny = 60, 20
         mask = np.zeros((ny, nx))
         
@@ -110,16 +112,17 @@ def simulate_masked_flow():
     wss_bottom = mu_local_bottom * np.abs((u[1, :] - u[0, :]) / dy)
     wss_top = mu_local_top * np.abs((u[-2, :] - u[-1, :]) / dy)
     
-    os.makedirs('results', exist_ok=True)
-    np.save('results/u.npy', u)
-    np.save('results/v.npy', v)
-    np.save('results/p.npy', p)
-    np.save('results/nu.npy', nu_field) # Export viscosity field
-    np.save('results/wss_top.npy', wss_top)
-    np.save('results/wss_bottom.npy', wss_bottom)
-    np.save('results/mask.npy', mask) 
+    results_dir = os.path.join(PROJECT_ROOT, 'results')
+    os.makedirs(results_dir, exist_ok=True)
+    np.save(os.path.join(results_dir, 'u.npy'), u)
+    np.save(os.path.join(results_dir, 'v.npy'), v)
+    np.save(os.path.join(results_dir, 'p.npy'), p)
+    np.save(os.path.join(results_dir, 'nu.npy'), nu_field) # Export viscosity field
+    np.save(os.path.join(results_dir, 'wss_top.npy'), wss_top)
+    np.save(os.path.join(results_dir, 'wss_bottom.npy'), wss_bottom)
+    np.save(os.path.join(results_dir, 'mask.npy'), mask) 
     
-    print("Non-Newtonian Simulation completed. Results saved to 'results' directory.")
+    print(f"Non-Newtonian Simulation completed. Results saved to '{results_dir}'.")
 
 if __name__ == '__main__':
     simulate_masked_flow()

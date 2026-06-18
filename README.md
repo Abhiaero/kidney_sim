@@ -2,19 +2,99 @@
 
 This project provides an industrial-grade foundational model to simulate human renal fluid flow using both classical CFD techniques and Machine Learning models. The core objective is to calculate and visualize complex hemodynamics and tubular flow patterns—most notably the Wall Shear Stress (WSS)—which serve as critical indicators for early-stage renal diseases such as Chronic Kidney Disease (CKD) and Diabetic Nephropathy.
 
-## Project Structure
+### 📁 Project Structure
 
-*   **`methodology.md`**: A detailed document outlining the governing mathematical equations (Navier-Stokes), key terminologies (WSS, Reynolds Number, Porous Media), and advanced future plans. Read this first to understand the science behind the code.
-*   **`assets/`**: Contains the input image geometries used for masking real biological structures.
-    *   `glomerulus_cross_section.png`: High-contrast microscopic cross-section of a renal glomerulus capillary network.
-*   **`extract_geometry.py`**: Image processing script. Reads the picture of the kidney component (`assets/glomerulus_cross_section.png`), thresholds it, and creates a computational binary mask (`assets/mask.npy`) for the CFD solver to use.
-*   **`simulate_renal_flow.py`**: The core CFD engine. It uses a custom 2D Finite Difference Method (FDM) with a time-marching projection algorithm to solve the incompressible Navier-Stokes equations. It incorporates the **Darcy-Brinkman Porous Media** equations to allow fluid filtration through biological tissue and dynamically calculates Non-Newtonian blood viscosity using the **Carreau-Yasuda Rheological model**.
-*   **`visualize_results.py`**: The post-processing script. It loads the simulation data matrices and uses Matplotlib to generate high-quality vector fields (with log-scale highlighting porous permeation), pressure contours, and dynamic viscosity maps overlaid on the real geometry.
-*   **`pinn_surrogate.py`**: Machine Learning script implementing a Physics-Informed Neural Network (PINN) using PyTorch. This acts as a proof-of-concept fast surrogate model learning the physics of the Navier-Stokes equations.
-*   **`train_ckd_classifier.py`**: Machine Learning script using Scikit-Learn. It generates synthetic patient hemodynamic data (WSS, pressure gradients) and trains a Random Forest Classifier to predict CKD stages. Outputs a confusion matrix.
-*   **`app.py`**: Interactive Streamlit Web Dashboard. Acts as the frontend UI where users can adjust patient parameters on sliders, view real-time CKD stage predictions from the ML model, and visualize the CFD fluid flow overlaid on the kidney geometry.
-*   **`requirements.txt`**: Standard Python dependencies required to run the simulation, data processing, and ML algorithms.
-*   **`results/`**: A generated folder containing raw `.npy` arrays output by the solver, the final CFD plotted image (`masked_cfd_simulation_results.png`), and the ML classification confusion matrix (`ckd_classifier_cm.png`).
+Following the 18-month research plan architecture, the repository is modularized for scalability:
+
+```text
+kidney_sim/
+├── data/
+│   ├── raw/            # Raw DICOM/NIfTI scans (gitignored)
+│   ├── meshes/         # Generated .vtu, .msh files
+│   └── biobank/        # Clinical feature datasets (NHANES / UK Biobank)
+├── src/
+│   ├── cfd/            # Fluid dynamics solvers (Navier-Stokes/Stokes)
+│   │   └── simulate_renal_flow.py
+│   ├── viz/            # PyVista and Matplotlib rendering scripts
+│   │   └── visualize_results.py
+│   ├── classifier/     # Machine Learning CKD predictors (XGBoost/RF)
+│   │   └── train_ckd_classifier.py
+│   ├── pinn/           # Physics-Informed Neural Network surrogates
+│   │   └── pinn_surrogate.py
+│   ├── meshing/        # Geometry extraction and meshing pipelines
+│   │   └── extract_geometry.py
+│   ├── segmentation/   # Medical image segmentation tools
+│   └── nephron/        # ODE models for tubular transport
+│       └── tubular_transport_ode.py
+├── dashboard/          # Clinical Dashboard (Streamlit/Dash)
+│   └── app.py
+├── notebooks/          # Jupyter notebooks for data exploration
+├── tests/              # Pytest suite
+├── docs/               # Sphinx/Jupyter Book documentation
+├── environment.yml     # Conda environment definition
+├── dvc.yaml            # Data Version Control pipeline
+└── README.md
+```
+
+### 📁 Core Files
+
+1.  **`src/meshing/extract_geometry.py`**: A preprocessing script that takes a medical image cross-section of a glomerulus (`assets/glomerulus_cross_section.png`), applies computer vision techniques (Otsu's thresholding), and generates a binary numerical mask (`assets/mask.npy`). This mask directly informs the CFD solver where the porous solid boundaries of the capillaries exist.
+2.  **`src/cfd/simulate_renal_flow.py`**: The core CFD engine. It solves the incompressible Navier-Stokes equations over the domain using a Finite Difference Method. It incorporates a Non-Newtonian Carreau-Yasuda model to simulate blood's shear-thinning behavior and enforces no-slip boundaries over the complex geometry mask.
+3.  **`src/viz/visualize_results.py`**: Post-processing module. It loads the simulation tensors and generates publication-ready colormaps for Velocity, Pressure, and Dynamic Viscosity using Matplotlib.
+4.  **`src/nephron/tubular_transport_ode.py`**: Implementation of Phase 3. A rigid mathematical model using a system of ODEs (solved via SciPy's stiff `Radau` integrator) simulating the **Weinstein-Stephenson epithelial transport** along the proximal tubule. Computes fluid flow and NaCl concentration drops mimicking reabsorption.
+5.  **`src/classifier/train_ckd_classifier.py`**: The ML component (Phase 5). Generates a rigorous **10,000-patient virtual cohort** via Latin Hypercube Sampling. Trains an **XGBoost Classifier** on hemodynamic features to predict CKD stages and uses **SHAP** to compute actionable feature importances for clinicians.
+6.  **`src/pinn/pinn_surrogate.py`**: An advanced experimental module demonstrating the architecture for a Physics-Informed Neural Network (PINN). It aims to replace the slow FDM solver with a real-time deep learning surrogate by optimizing a PyTorch network against Navier-Stokes residuals.
+7.  **`dashboard/app.py`**: An interactive web dashboard built with Streamlit and Plotly. It unifies the CFD results, the Nephron ODE profiles, and the XGBoost/SHAP ML predictions into a single, cohesive clinical interface.
+
+## 🚀 Run the Pipeline
+
+You can run the entire pipeline (Extract -> CFD -> Visualize -> ODE -> ML -> PINN) automatically with a single command using the included batch script:
+
+```bash
+.\run_pipeline.bat
+```
+
+*(Alternatively, because this project includes a `dvc.yaml` file, you can also run the pipeline using Data Version Control: `dvc repro`)*
+
+### Run Individually
+If you prefer to run the steps individually, execute the following commands from the root directory (using the virtual environment):
+
+**A. Generate Geometry Mask**
+```bash
+.\.venv\Scripts\python src/meshing/extract_geometry.py
+```
+
+**B. Run 2D CFD Solver**
+*(Note: Requires `extract_geometry.py` to be run first)*
+```bash
+.\.venv\Scripts\python src/cfd/simulate_renal_flow.py
+```
+
+**C. Visualize Fluid Dynamics**
+*(Note: Requires `simulate_renal_flow.py` to be run first)*
+```bash
+.\.venv\Scripts\python src/viz/visualize_results.py
+```
+
+**D. Run Nephron ODE Model**
+```bash
+.\.venv\Scripts\python src/nephron/tubular_transport_ode.py
+```
+
+**E. Train ML CKD Classifier (XGBoost + SHAP)**
+```bash
+.\.venv\Scripts\python src/classifier/train_ckd_classifier.py
+```
+
+**F. Train PINN Surrogate**
+```bash
+.\.venv\Scripts\python src/pinn/pinn_surrogate.py
+```
+
+**G. Launch the Dashboard**
+```bash
+.\.venv\Scripts\streamlit run dashboard/app.py
+```
 
 ## Getting Started (Short Run Guide)
 

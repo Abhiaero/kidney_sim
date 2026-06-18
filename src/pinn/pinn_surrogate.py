@@ -48,7 +48,12 @@ def train_pinn():
             print(f"Epoch {epoch}/{epochs}, Loss: {loss.item():.4f}")
             
     print("PINN surrogate training completed. Real-time inference now possible.")
-    torch.save(model.state_dict(), 'assets/pinn_surrogate.pth')
+    import os
+    PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../'))
+    assets_dir = os.path.join(PROJECT_ROOT, 'assets')
+    os.makedirs(assets_dir, exist_ok=True)
+    out_path = os.path.join(assets_dir, 'pinn_surrogate.pth')
+    torch.save(model.state_dict(), out_path)
 
 if __name__ == "__main__":
     train_pinn()

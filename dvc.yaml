@@ -1,0 +1,56 @@
+stages:
+  extract_geometry:
+    cmd: python src/meshing/extract_geometry.py
+    deps:
+      - src/meshing/extract_geometry.py
+      - assets/glomerulus_cross_section.png
+    outs:
+      - assets/mask.npy
+
+  simulate_cfd:
+    cmd: python src/cfd/simulate_renal_flow.py
+    deps:
+      - src/cfd/simulate_renal_flow.py
+      - assets/mask.npy
+    outs:
+      - results/u.npy
+      - results/v.npy
+      - results/p.npy
+      - results/nu.npy
+
+  visualize_results:
+    cmd: python src/viz/visualize_results.py
+    deps:
+      - src/viz/visualize_results.py
+      - results/u.npy
+      - results/v.npy
+      - results/p.npy
+      - assets/mask.npy
+    outs:
+      - results/masked_cfd_simulation_results.png
+
+  train_classifier:
+    cmd: python src/classifier/train_ckd_classifier.py
+    deps:
+      - src/classifier/train_ckd_classifier.py
+    outs:
+      - results/ckd_classifier_cm.png
+      - results/shap_summary.png
+      - assets/xgboost_ckd_model.json
+
+  simulate_nephron_ode:
+    cmd: python src/nephron/tubular_transport_ode.py
+    deps:
+      - src/nephron/tubular_transport_ode.py
+    outs:
+      - results/nephron_Q.npy
+      - results/nephron_C.npy
+      - results/nephron_x.npy
+      - results/nephron_profile.png
+
+  train_pinn:
+    cmd: python src/pinn/pinn_surrogate.py
+    deps:
+      - src/pinn/pinn_surrogate.py
+    outs:
+      - assets/pinn_surrogate.pth
